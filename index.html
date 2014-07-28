@@ -1,197 +1,280 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>smart dropdown</title>
-  <style>
-    head {
-      display: block;
-      background: lightskyblue;
-      text-align: center;
-      padding: 20px;
-    }
+    <meta charset="utf-8">
+    <title>smart dropdown</title>
+    <style>
+        head {
+            display: block;
+            background: lightskyblue;
+            text-align: center;
+            padding: 20px;
+        }
 
-    title {
-      font-size: 24px;
-      display: block;
-    }
+        title {
+            font-size: 24px;
+            display: block;
+        }
 
-    body {
-      text-align: center;
-    }
+        body {
+            text-align: center;
+        }
 
-    .smart-dropdown {
-      display: inline-block;
-      font-size: 12px;
-      position: relative;
-      border: 1px solid lightgray;
-      text-align: left;
-    }
+        .smart-dropdown {
+            display: inline-block;
+            font-size: 12px;
+            position: relative;
+            border: 1px solid lightgray;
+            text-align: left;
+        }
 
-    .smart-dropdown > * {
-      font-size: 12px;
-      margin: 0;
-      vertical-align: top;
-      box-sizing: border-box;
-      -moz-box-sizing: border-box;
-      border-color: lightgray;
-    }
+        .smart-dropdown > * {
+            font-size: 12px;
+            margin: 0;
+            vertical-align: top;
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            border-color: lightgray;
+        }
 
-    .smart-dropdown > input {
-      text-overflow: ellipsis;
-      border: none;
-      padding: 1px;
-    }
+        .smart-dropdown > input {
+            text-overflow: ellipsis;
+            border: none;
+            padding: 1px;
+        }
 
-    .smart-dropdown > input,
-    .smart-dropdown > button {
-      height: 18px;
-    }
+        .smart-dropdown > input,
+        .smart-dropdown > button {
+            height: 18px;
+        }
 
-    .smart-dropdown > button {
-      border: 1px outset lightgray;
-      padding: 1px 4px;
-      line-height: 0px;
-    }
+        .smart-dropdown > button {
+            border: 1px outset lightgray;
+            padding: 1px 4px;
+            line-height: 0px;
+        }
 
-    .smart-dropdown > button::-moz-focus-inner {
-      border: none;
-      padding: 0;
-    }
+        .smart-dropdown > button::-moz-focus-inner {
+            border: none;
+            padding: 0;
+        }
 
-    .smart-dropdown > button:active {
-      border: 1px inset lightgray;
-    }
+        .smart-dropdown > button:active {
+            border: 1px inset lightgray;
+        }
 
-    .smart-dropdown > ul {
-      display: block;
-      position: absolute;
-      /*opacity: 1;*/
-      min-width: 100%;
-      list-style: none;
-      padding: 0;
-      margin: -1px 0 0 0;
-      background: whitesmoke;
-      border: 1px solid lightgray;
-      overflow: hidden;
-      transition: opacity .15s ease 0;
-      -webkit-transition: opacity .15s ease 0;
-      overflow-y: auto;
-      max-height: 7em;
-    }
+        .smart-dropdown > ul {
+            display: block;
+            position: absolute;
+            /*opacity: 1;*/
+            min-width: 100%;
+            list-style: none;
+            padding: 0;
+            margin: -1px 0 0 0;
+            background: whitesmoke;
+            border: 1px solid lightgray;
+            overflow: hidden;
+            transition: opacity .15s ease 0;
+            -webkit-transition: opacity .15s ease 0;
+            overflow-y: auto;
+            max-height: 7em;
+        }
 
-    .smart-dropdown > ul > li > a {
-      text-decoration: none;
-      color: inherit;
-      background: transparent;
-    }
+        .smart-dropdown > ul > li > a {
+            text-decoration: none;
+            color: inherit;
+            background: transparent;
+        }
 
-    .smart-dropdown > ul,
-    .smart-dropdown > ul > li {
-      cursor: default;
-      user-select: none;
-      -ms-user-select: none;
-      -moz-user-select: none;
-      -webkit-user-select: none;
-      -khtml-user-select: none;
-      white-space: nowrap;
-    }
+        .smart-dropdown > ul,
+        .smart-dropdown > ul > li {
+            cursor: default;
+            user-select: none;
+            -ms-user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            white-space: nowrap;
+        }
 
-    .smart-dropdown > ul > li.highlighted {
-      background: royalblue;
-      color: white;
-    }
+        .smart-dropdown > ul > li.highlighted {
+            background: royalblue;
+            color: white;
+        }
 
-    .smart-dropdown > ul:hover > li.highlighted {
-      background: transparent;
-      color: inherit;
-    }
+        .smart-dropdown > ul:hover > li.highlighted {
+            background: transparent;
+            color: inherit;
+        }
 
-    .smart-dropdown > ul > li:hover,
-    .smart-dropdown > ul > li.highlighted:hover {
-      background: royalblue;
-      color: white;
-    }
+        .smart-dropdown > ul > li:hover,
+        .smart-dropdown > ul:hover > li.highlighted:hover {
+            background: royalblue;
+            color: white;
+        }
 
-    .smart-dropdown > ul > li.filtered {
-      display: none;
-    }
-  </style>
-  <script type="text/javascript" src="js/polyfill.js"></script>
+        .smart-dropdown > ul > li.filtered {
+            display: none;
+        }
+    </style>
+    <script type="text/javascript" src="js/polyfill.js"></script>
 </head>
 <body>
 <div class="smart-dropdown">
-  <input value="" unselectable="on">
-  <button>&#9662;</button>
-  <ul unselectable="on" style="display: none">
-    <li unselectable="on">blub</li>
-    <li unselectable="on"><a>bla</a></li>
-    <li unselectable="on">blob</li>
-    <li unselectable="on">hella</li>
-    <li unselectable="on">hello</li>
-    <li unselectable="on">world</li>
-    <li unselectable="on">ein wirklich langer text. so!!! wirklich! gaaaanz lang!</li>
-  </ul>
+    <input value="">
+    <button unselectable="on">&#9662;</button>
+    <ul unselectable="on" style="display: none">
+        <li unselectable="on">blub</li>
+        <li unselectable="on">bla</li>
+        <li unselectable="on">blob</li>
+        <li unselectable="on">hella</li>
+        <li unselectable="on">hello</li>
+        <li unselectable="on">world</li>
+        <li unselectable="on">ein wirklich langer text. so!!! wirklich! gaaaanz lang!</li>
+    </ul>
 </div>
 <script type="text/javascript"><!--
+var dropdown = document.querySelector(".smart-dropdown");
 var input = document.querySelector("input");
 var button = document.querySelector("button");
 var choicesContainer = document.querySelector("ul");
+(function () {
+    for (var i = 0; i < 7000; ++i) {
+        choicesContainer
+                .appendChild(document.createElement("li"))
+                .appendChild(document.createTextNode("entry: " + i));
+    }
+}());
 var choices = toArray(choicesContainer.children);
 var selected;
+var highlighted;
+var filterString = "";
 
 function toggleChoices() {
-  if (choicesContainer.style.display == "none") {
-    showChoices();
-  }
-  else {
-    hideChoices();
-  }
+    if (choicesContainer.style.display == "none") {
+        showChoices();
+    }
+    else {
+        hideChoices();
+    }
 }
 
 function showChoices() {
-  highlight(selected);
-  choicesContainer.style.display = ""
+    choicesContainer.style.display = "";
+    highlight(selected);
 }
 
 function hideChoices() {
-  choicesContainer.style.display = "none";
+    choicesContainer.style.display = "none";
 }
 
 function select(choice) {
-  selected = choice;
-  input.value = textContent(choice);
-  hideChoices();
+    selected = choice;
+    input.value = textContent(choice);
+    hideChoices();
 }
 
-function highlight(highlighted) {
-  choices.forEach(function (choice) {
-    if (choice === highlighted) {
-      classListAdd(choice, "highlighted");
+function highlight(choice) {
+    if (highlighted) {
+        classListRemove(highlighted, "highlighted");
+    }
+    classListAdd(choice, "highlighted");
+    highlighted = choice;
+    choice.scrollIntoView();
+}
+
+function highlightNext() {
+    if (highlighted && highlighted.parentNode === choicesContainer) {
+        var nextChoice = nextElementSibling(highlighted);
+        if (nextChoice) {
+            highlight(nextChoice);
+            return;
+        }
+    }
+    var firstChoice = firstElementChild(choicesContainer);
+    if (firstChoice) {
+        highlight(firstChoice);
+    }
+}
+
+function highlightPrevious() {
+    if (highlighted && highlighted.parentNode === choicesContainer) {
+        var previousChoice = previousElementSibling(highlighted);
+        if (previousChoice) {
+            highlight(previousChoice);
+            return;
+        }
+    }
+    var lastChoice = lastElementChild(choicesContainer);
+    if (lastChoice) {
+        highlight(lastChoice);
+    }
+}
+
+function filterChoices() {
+    if (input.value == filterString) {
+        return;
+    }
+    if (input.value.indexOf(filterString) < 0) {
+        filterString = input.value;
+        var nextInList = firstElementChild(choicesContainer);
+        choices.forEach(function (choice) {
+            if (choice.parentNode === choicesContainer) {
+                nextInList = nextElementSibling(choice);
+            } else if (textContent(choice).indexOf(filterString) >= 0) {
+                choicesContainer.insertBefore(choice, nextInList);
+            }
+        });
     }
     else {
-      classListRemove(choice, "highlighted");
+        filterString = input.value;
+        toArray(choicesContainer.children).forEach(function (choice) {
+            if (textContent(choice).indexOf(filterString) < 0) {
+                choicesContainer.removeChild(choice);
+            }
+        });
     }
-  });
 }
 
 button.onclick = function () {
-  console.log("click");
-  toggleChoices();
-  return false;
+    toggleChoices();
+    return false;
 };
 
 button.ondblclick = function () {
-  console.log("dblclick");
-  toggleChoices();
-  return false;
+    toggleChoices();
+    return false;
 };
 
-choices.forEach(function (choice) {
-  choice.onclick = function () {
-    select(this);
-  }
-});
+input.onkeyup = filterChoices;
+
+input.onkeydown = function (e) {
+    e = e || window.event;
+    switch (e.keyCode) {
+    case 0x0D: // enter
+        if (highlighted) {
+            select(highlighted);
+        }
+        break;
+    case 0x28: // down
+        highlightNext(highlighted);
+        break;
+    case 0x26: // up
+        highlightPrevious(highlighted);
+        break;
+    }
+};
+
+choicesContainer.onclick = function (e) {
+    e = e || window.event;
+    var choice = e.target;
+    while (choice && choice.parentElement !== choicesContainer) {
+        choice = choice.parentElement;
+    }
+    if (choice) {
+        select(choice);
+    }
+};
 
 select(choices[1]);
 --></script>
