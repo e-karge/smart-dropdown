@@ -70,7 +70,7 @@
             min-width: 100%;
             list-style: none;
             padding: 0;
-            margin: -1px 0 0 0;
+            margin: 0 -1px;
             background: whitesmoke;
             border: 1px solid lightgray;
             overflow: hidden;
@@ -78,12 +78,7 @@
             -webkit-transition: opacity .15s ease 0;
             overflow-y: auto;
             max-height: 7em;
-        }
-
-        .smart-dropdown > ul > li > a {
-            text-decoration: none;
-            color: inherit;
-            background: transparent;
+            box-sizing: content-box;
         }
 
         .smart-dropdown > ul,
@@ -112,10 +107,6 @@
             background: royalblue;
             color: white;
         }
-
-        .smart-dropdown > ul > li.filtered {
-            display: none;
-        }
     </style>
     <script type="text/javascript" src="js/polyfill.js"></script>
 </head>
@@ -135,9 +126,9 @@
 </div>
 <script type="text/javascript"><!--
 var dropdown = document.querySelector(".smart-dropdown");
-var input = document.querySelector("input");
-var button = document.querySelector("button");
-var choicesContainer = document.querySelector("ul");
+var input = dropdown.querySelector("input");
+var button = dropdown.querySelector("button");
+var choicesContainer = dropdown.querySelector("ul");
 (function () {
     for (var i = 0; i < 7000; ++i) {
         choicesContainer
@@ -161,7 +152,14 @@ function toggleChoices() {
 
 function showChoices() {
     choicesContainer.style.display = "";
-    highlight(selected);
+    if (selected) {
+        highlight(selected);
+    }
+    if (highlighted) {
+        choicesContainer.scrollTop = highlighted.offsetTop + highlighted.offsetHeight > choicesContainer.offsetHeight
+                ? highlighted.offsetTop - highlighted.offsetHeight
+                : 0;
+    }
 }
 
 function hideChoices() {
@@ -174,40 +172,53 @@ function select(choice) {
     hideChoices();
 }
 
+function scrollHighlightedIntoView() {
+    if (highlighted && highlighted.parentNode === choicesContainer) {
+        var scrollTopMax = highlighted.offsetTop - highlighted.offsetHeight;
+        var scrollTopMin = highlighted.offsetTop - choicesContainer.offsetHeight + 2 * highlighted.offsetHeight;
+        if (choicesContainer.scrollTop > scrollTopMax) {
+            choicesContainer.scrollTop = scrollTopMax;
+        }
+        else if (choicesContainer.scrollTop < scrollTopMin) {
+            choicesContainer.scrollTop = scrollTopMin;
+        }
+    } else {
+        choicesContainer.scrollTop = 0;
+    }
+}
+
 function highlight(choice) {
     if (highlighted) {
         classListRemove(highlighted, "highlighted");
     }
     classListAdd(choice, "highlighted");
     highlighted = choice;
-    choice.scrollIntoView();
+    scrollHighlightedIntoView();
 }
 
 function highlightNext() {
+    var nextChoice;
     if (highlighted && highlighted.parentNode === choicesContainer) {
-        var nextChoice = nextElementSibling(highlighted);
-        if (nextChoice) {
-            highlight(nextChoice);
-            return;
-        }
+        nextChoice = nextElementSibling(highlighted);
     }
-    var firstChoice = firstElementChild(choicesContainer);
-    if (firstChoice) {
-        highlight(firstChoice);
+    if (!nextChoice) {
+        nextChoice = firstElementChild(choicesContainer)
+    }
+    if (nextChoice) {
+        highlight(nextChoice);
     }
 }
 
 function highlightPrevious() {
+    var previousChoice;
     if (highlighted && highlighted.parentNode === choicesContainer) {
-        var previousChoice = previousElementSibling(highlighted);
-        if (previousChoice) {
-            highlight(previousChoice);
-            return;
-        }
+        previousChoice = previousElementSibling(highlighted);
     }
-    var lastChoice = lastElementChild(choicesContainer);
-    if (lastChoice) {
-        highlight(lastChoice);
+    if (!previousChoice) {
+        previousChoice = lastElementChild(choicesContainer)
+    }
+    if (previousChoice) {
+        highlight(previousChoice);
     }
 }
 
@@ -221,6 +232,9 @@ function filterChoices() {
         choices.forEach(function (choice) {
             if (choice.parentNode === choicesContainer) {
                 nextInList = nextElementSibling(choice);
+                if (textContent(choice).indexOf(filterString) < 0) {
+                    choicesContainer.removeChild(choice);
+                }
             } else if (textContent(choice).indexOf(filterString) >= 0) {
                 choicesContainer.insertBefore(choice, nextInList);
             }
@@ -234,6 +248,7 @@ function filterChoices() {
             }
         });
     }
+    scrollHighlightedIntoView();
 }
 
 button.onclick = function () {
@@ -267,7 +282,7 @@ input.onkeydown = function (e) {
 
 choicesContainer.onclick = function (e) {
     e = e || window.event;
-    var choice = e.target;
+    var choice = e.target || e.srcElement;
     while (choice && choice.parentElement !== choicesContainer) {
         choice = choice.parentElement;
     }
