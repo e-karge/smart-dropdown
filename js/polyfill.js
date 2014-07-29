@@ -94,7 +94,7 @@ if (typeof document.documentElement.previousElementSibling != "undefined") {
   };
 } else {
   previousElementSibling = function (element) {
-    for (var sibling = element.nextSibling; sibling; sibling = sibling.previousSibling) {
+    for (var sibling = element.previousSibling; sibling; sibling = sibling.previousSibling) {
       if (sibling instanceof Element) {
         break;
       }
