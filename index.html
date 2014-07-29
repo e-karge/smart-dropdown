@@ -1,300 +1,297 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>smart dropdown</title>
-<style>
-  head {
-    display: block;
-    background: lightskyblue;
-    text-align: center;
-    padding: 20px;
-  }
-  title {
-    font-size: 24px;
-    display: block;
-  }
-
-  body {
-    text-align: center;
-  }
-
-  .smart-dropdown {
-    display: inline-block;
-    font-size: 12px;
-    position: relative;
-    border: 1px solid lightgray;
-    text-align: left;
-  }
-
-  .smart-dropdown > * {
-    font-size: 12px;
-    margin: 0;
-    vertical-align: top;
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    border-color: lightgray;
-  }
-
-  .smart-dropdown > input {
-    text-overflow: ellipsis;
-    border: none;
-    padding: 1px;
-  }
-
-  .smart-dropdown > input,
-  .smart-dropdown > button {
-    height: 18px;
-  }
-
-  .smart-dropdown > button {
-    border: 1px outset lightgray;
-    padding: 1px 4px;
-    line-height: 0px;
-  }
-
-  .smart-dropdown > button::-moz-focus-inner {
-    border: none;
-    padding: 0;
-  }
-
-  .smart-dropdown > button:active {
-    border: 1px inset lightgray;
-  }
-
-  .smart-dropdown > ul {
-    display: block;
-    position: absolute;
-    /*opacity: 1;*/
-    min-width: 100%;
-    list-style: none;
-    padding: 0;
-    margin: -1px 0 0 0;
-    background: whitesmoke;
-    border: 1px solid lightgray;
-    overflow: hidden;
-    transition: opacity .15s ease 0;
-    overflow-y: scroll;
-    max-height: 7em;
-  }
-
-  .smart-dropdown > ul,
-  .smart-dropdown > ul > li {
-    cursor: default;
-    user-select: none;
-    -ms-user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    behavior: url(unselectable.htc);
-    white-space: nowrap;
-  }
-
-  .smart-dropdown > ul:not(:hover) > li.selected,
-  .smart-dropdown > ul > li:hover {
-    background: royalblue;
-    color: white;
-  }
-
-  .smart-dropdown > ul > li.filtered {
-    display: none;
-  }
-</style>
-<script type="application/javascript">
-  function show(choices) {
-    if (choices.style.display == "none") {
-      choices.style.display = "";
-      setTimeout(function () {
-        choices.style.opacity = "";
-      }, 0);
-    }
-  }
-  function hide(choices) {
-    if (choices.style.display != "none") {
-      choices.style.opacity = "0";
-      setTimeout(function () {
-        choices.style.display = "none";
-      }, 150);
-    }
-  }
-  function toggleList(event) {
-    var choices = this.parentElement.querySelector("ul");
-    if (choices.style.display == "none") {
-      var input = this.parentElement.querySelector('input');
-      input.focus();
-      input.value = "";
-      show(choices);
-    }
-    else {
-      hide(choices);
-    }
-  }
-
-  function getSelected(choices) {
-    var selected = choices.querySelector(".selected");
-    if (!selected) {
-      selected = choices.children[0];
-      selected.classList.add("selected");
-      selected.scrollIntoView();
-    }
-    return selected.textContent;
-  }
-
-  function select(choices, selected) {
-    [].forEach.call(choices.children, function (choice) {
-      choice.classList.remove("selected");
-    });
-    selected.classList.add("selected");
-    selected.scrollIntoView();
-  }
-
-  function getVisibleSelected(choices) {
-    var selected = [].filter.call(choices.children, function (choice) {
-      return !choice.classList.contains("filtered") && choice.classList.contains("selected");
-    })[0];
-    if (!selected) {
-      var selected = [].filter.call(choices.children, function (choice) {
-        return !choice.classList.contains("filtered");
-      })[0];
-      if (selected) {
-        select(choices, selected);
-      }
-    }
-    return selected ? selected.textContent : undefined;
-  }
-
-  function selectNext(choices) {
-    var selectNext = false;
-    [].filter.call(choices.children, function (choice) {
-      return !choice.classList.contains("filtered");
-    }).forEach(function (choice) {
-      if (selectNext) {
-        choice.classList.add("selected");
-        choice.scrollIntoView();
-        selectNext = false;
-      }
-      else {
-        selectNext = choice.classList.contains("selected");
-        choice.classList.remove("selected");
-      }
-    });
-    getVisibleSelected(choices);
-  }
-
-  function selectPrevious(choices) {
-    var selectNext = false;
-    [].filter
-        .call(choices.children, function (choice) {
-                return !choice.classList.contains("filtered");
-              })
-        .reverse()
-        .forEach(function (choice) {
-                   if (selectNext) {
-                     choice.classList.add("selected");
-                     choice.scrollIntoView();
-                     selectNext = false;
-                   }
-                   else {
-                     selectNext = choice.classList.contains("selected");
-                     choice.classList.remove("selected");
-                   }
-                 });
-    getVisibleSelected(choices);
-  }
-
-  function handleKeyPress(event) {
-    var choices = this.parentElement.querySelector("ul");
-    switch (event.keyCode) {
-      case 0x0D:
-        var selected = getVisibleSelected(choices);
-        if (selected) {
-          this.value = selected;
+    <meta charset="utf-8">
+    <title>smart dropdown</title>
+    <style>
+        head {
+            display: block;
+            background: lightskyblue;
+            text-align: center;
+            padding: 20px;
         }
-        this.blur();
-        break;
-      case 0x1B:
-        this.blur();
-        break;
-      case 0x28:
-        if (choices.style.display == "none") {
-          show(choices);
-          var selected = getVisibleSelected(choices);
-          if (selected) {
-            this.value = selected;
-          }
-        }
-        else {
-          selectNext(choices);
-        }
-        break;
-      case 0x26:
-        if (choices.style.display == "none") {
-          show(choices);
-          var selected = getVisibleSelected(choices);
-          if (selected) {
-            this.value = selected;
-          }
-        }
-        else {
-          selectPrevious(choices);
-        }
-        break;
-      case 0x09:
-        var selected = getVisibleSelected(choices);
-        if (selected) {
-          this.value = selected;
-        }
-      default :
-        break;
-    }
-  }
 
-  function handleInput(event) {
-    var choices = this.parentElement.querySelector("ul");
-    var value = this.value;
-    [].forEach.call(choices.children, function (choice) {
-      if (choice.textContent.search(value) >= 0) {
-        choice.classList.remove("filtered");
-      }
-      else {
-        choice.classList.add("filtered");
-      }
-    });
-    show(choices);
-  }
+        title {
+            font-size: 24px;
+            display: block;
+        }
 
-  function handleFocus(event) {
-    var choices = this.parentElement.querySelector("ul");
-    [].forEach.call(choices.children, function (choice) {
-      choice.classList.remove("filtered");
-    });
-  }
+        body {
+            text-align: center;
+        }
 
-  function handleBlur(event) {
-    var choices = this.parentElement.querySelector('ul');
-    hide(choices);
-    this.value = getSelected(choices);
-  }
+        .smart-dropdown {
+            display: inline-block;
+            font-size: 12px;
+            position: relative;
+            border: 1px solid lightgray;
+            text-align: left;
+        }
 
-  function mouseSelection(event) {
-    this.parentElement.parentElement.querySelector('input').value = this.textContent;
-    select(this.parentElement, this);
-    hide(this.parentElement);
-  }
-</script>
+        .smart-dropdown > * {
+            font-size: 12px;
+            margin: 0;
+            vertical-align: top;
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            border-color: lightgray;
+        }
+
+        .smart-dropdown > input {
+            text-overflow: ellipsis;
+            border: none;
+            padding: 1px;
+        }
+
+        .smart-dropdown > input,
+        .smart-dropdown > button {
+            height: 18px;
+        }
+
+        .smart-dropdown > button {
+            border: 1px outset lightgray;
+            padding: 1px 4px;
+            line-height: 0px;
+        }
+
+        .smart-dropdown > button::-moz-focus-inner {
+            border: none;
+            padding: 0;
+        }
+
+        .smart-dropdown > button:active {
+            border: 1px inset lightgray;
+        }
+
+        .smart-dropdown > ul {
+            display: block;
+            position: absolute;
+            /*opacity: 1;*/
+            min-width: 100%;
+            list-style: none;
+            padding: 0;
+            margin: 0 -1px;
+            background: whitesmoke;
+            border: 1px solid lightgray;
+            overflow: hidden;
+            transition: opacity .15s ease 0;
+            -webkit-transition: opacity .15s ease 0;
+            overflow-y: auto;
+            max-height: 7em;
+            box-sizing: content-box;
+        }
+
+        .smart-dropdown > ul,
+        .smart-dropdown > ul > li {
+            cursor: default;
+            user-select: none;
+            -ms-user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            white-space: nowrap;
+        }
+
+        .smart-dropdown > ul > li.highlighted {
+            background: royalblue;
+            color: white;
+        }
+
+        .smart-dropdown > ul:hover > li.highlighted {
+            background: transparent;
+            color: inherit;
+        }
+
+        .smart-dropdown > ul > li:hover,
+        .smart-dropdown > ul:hover > li.highlighted:hover {
+            background: royalblue;
+            color: white;
+        }
+    </style>
+    <script type="text/javascript" src="js/polyfill.js"></script>
 </head>
 <body>
 <div class="smart-dropdown">
-  <input value="" unselectable onkeydown="handleKeyPress.call(this, event)" oninput="handleInput.call(this, event)" onfocus="handleFocus.call(this, event)" onblur="handleBlur.call(this, event);"><button onclick='toggleList.call(this, event)'>&#9662;</button>
-  <ul unselectable="on" style="display: none; opacity: 0" onmousedown="return false">
-    <li unselectable="on" onclick="mouseSelection.call(this, event)">blub</li>
-    <li unselectable="on" onclick="mouseSelection.call(this, event)" class="selected">bla</li>
-    <li unselectable="on" onclick="mouseSelection.call(this, event)">blob</li>
-    <li unselectable="on" onclick="mouseSelection.call(this, event)">hella</li>
-    <li unselectable="on" onclick="mouseSelection.call(this, event)">hello</li>
-    <li unselectable="on" onclick="mouseSelection.call(this, event)">world</li>
-    <li unselectable="on" onclick="mouseSelection.call(this, event)">ein wirklich langer text. so!!! wirklich! gaaaanz lang!</li>
-  </ul>
+    <input value="">
+    <button unselectable="on">&#9662;</button>
+    <ul unselectable="on" style="display: none">
+        <li unselectable="on">blub</li>
+        <li unselectable="on">bla</li>
+        <li unselectable="on">blob</li>
+        <li unselectable="on">hella</li>
+        <li unselectable="on">hello</li>
+        <li unselectable="on">world</li>
+        <li unselectable="on">ein wirklich langer text. so!!! wirklich! gaaaanz lang!</li>
+    </ul>
 </div>
+<script type="text/javascript"><!--
+var dropdown = document.querySelector(".smart-dropdown");
+var input = dropdown.querySelector("input");
+var button = dropdown.querySelector("button");
+var choicesContainer = dropdown.querySelector("ul");
+(function () {
+    for (var i = 0; i < 7000; ++i) {
+        choicesContainer
+                .appendChild(document.createElement("li"))
+                .appendChild(document.createTextNode("entry: " + i));
+    }
+}());
+var choices = toArray(choicesContainer.children);
+var selected;
+var highlighted;
+var filterString = "";
+
+function toggleChoices() {
+    if (choicesContainer.style.display == "none") {
+        showChoices();
+    }
+    else {
+        hideChoices();
+    }
+}
+
+function showChoices() {
+    choicesContainer.style.display = "";
+    if (selected) {
+        highlight(selected);
+    }
+    if (highlighted) {
+        choicesContainer.scrollTop = highlighted.offsetTop + highlighted.offsetHeight > choicesContainer.offsetHeight
+                ? highlighted.offsetTop - highlighted.offsetHeight
+                : 0;
+    }
+}
+
+function hideChoices() {
+    choicesContainer.style.display = "none";
+}
+
+function select(choice) {
+    selected = choice;
+    input.value = textContent(choice);
+    hideChoices();
+}
+
+function scrollHighlightedIntoView() {
+    if (highlighted && highlighted.parentNode === choicesContainer) {
+        var scrollTopMax = highlighted.offsetTop - highlighted.offsetHeight;
+        var scrollTopMin = highlighted.offsetTop - choicesContainer.offsetHeight + 2 * highlighted.offsetHeight;
+        if (choicesContainer.scrollTop > scrollTopMax) {
+            choicesContainer.scrollTop = scrollTopMax;
+        }
+        else if (choicesContainer.scrollTop < scrollTopMin) {
+            choicesContainer.scrollTop = scrollTopMin;
+        }
+    } else {
+        choicesContainer.scrollTop = 0;
+    }
+}
+
+function highlight(choice) {
+    if (highlighted) {
+        classListRemove(highlighted, "highlighted");
+    }
+    classListAdd(choice, "highlighted");
+    highlighted = choice;
+    scrollHighlightedIntoView();
+}
+
+function highlightNext() {
+    var nextChoice;
+    if (highlighted && highlighted.parentNode === choicesContainer) {
+        nextChoice = nextElementSibling(highlighted);
+    }
+    if (!nextChoice) {
+        nextChoice = firstElementChild(choicesContainer)
+    }
+    if (nextChoice) {
+        highlight(nextChoice);
+    }
+}
+
+function highlightPrevious() {
+    var previousChoice;
+    if (highlighted && highlighted.parentNode === choicesContainer) {
+        previousChoice = previousElementSibling(highlighted);
+    }
+    if (!previousChoice) {
+        previousChoice = lastElementChild(choicesContainer)
+    }
+    if (previousChoice) {
+        highlight(previousChoice);
+    }
+}
+
+function filterChoices() {
+    if (input.value == filterString) {
+        return;
+    }
+    if (input.value.indexOf(filterString) < 0) {
+        filterString = input.value;
+        var nextInList = firstElementChild(choicesContainer);
+        choices.forEach(function (choice) {
+            if (choice.parentNode === choicesContainer) {
+                nextInList = nextElementSibling(choice);
+                if (textContent(choice).indexOf(filterString) < 0) {
+                    choicesContainer.removeChild(choice);
+                }
+            } else if (textContent(choice).indexOf(filterString) >= 0) {
+                choicesContainer.insertBefore(choice, nextInList);
+            }
+        });
+    }
+    else {
+        filterString = input.value;
+        toArray(choicesContainer.children).forEach(function (choice) {
+            if (textContent(choice).indexOf(filterString) < 0) {
+                choicesContainer.removeChild(choice);
+            }
+        });
+    }
+    scrollHighlightedIntoView();
+}
+
+button.onclick = function () {
+    toggleChoices();
+    return false;
+};
+
+button.ondblclick = function () {
+    toggleChoices();
+    return false;
+};
+
+input.onkeyup = filterChoices;
+
+input.onkeydown = function (e) {
+    e = e || window.event;
+    switch (e.keyCode) {
+    case 0x0D: // enter
+        if (highlighted) {
+            select(highlighted);
+        }
+        break;
+    case 0x28: // down
+        highlightNext(highlighted);
+        break;
+    case 0x26: // up
+        highlightPrevious(highlighted);
+        break;
+    }
+};
+
+choicesContainer.onclick = function (e) {
+    e = e || window.event;
+    var choice = e.target || e.srcElement;
+    while (choice && choice.parentElement !== choicesContainer) {
+        choice = choice.parentElement;
+    }
+    if (choice) {
+        select(choice);
+    }
+};
+
+select(choices[1]);
+--></script>
 </body>
 </html>
