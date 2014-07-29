@@ -1,0 +1,88 @@
+.smart-dropdown {
+  display: inline-block;
+  font-size: 12px;
+  position: relative;
+  border: 1px solid lightgray;
+  text-align: left;
+}
+
+.smart-dropdown > * {
+  font-size: 12px;
+  margin: 0;
+  vertical-align: top;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  border-color: lightgray;
+}
+
+.smart-dropdown > input {
+  text-overflow: ellipsis;
+  border: none;
+  padding: 1px;
+}
+
+.smart-dropdown > input,
+.smart-dropdown > button {
+  height: 18px;
+}
+
+.smart-dropdown > button {
+  border: 1px outset lightgray;
+  padding: 1px 4px;
+  line-height: 0px;
+}
+
+.smart-dropdown > button::-moz-focus-inner {
+  border: none;
+  padding: 0;
+}
+
+.smart-dropdown > button:active {
+  border: 1px inset lightgray;
+}
+
+.smart-dropdown > ul {
+  display: block;
+  position: absolute;
+  /*opacity: 1;*/
+  min-width: 100%;
+  list-style: none;
+  padding: 0;
+  margin: 0 -1px;
+  background: whitesmoke;
+  border: 1px solid lightgray;
+  overflow: hidden;
+  transition: opacity .15s ease 0;
+  -webkit-transition: opacity .15s ease 0;
+  overflow-y: auto;
+  max-height: 7em;
+  max-height: 50vh;
+  box-sizing: content-box;
+}
+
+.smart-dropdown > ul,
+.smart-dropdown > ul > li {
+  cursor: default;
+  user-select: none;
+  -ms-user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  white-space: nowrap;
+}
+
+.smart-dropdown > ul > li.selected {
+  background: royalblue;
+  color: white;
+}
+
+.smart-dropdown > ul:hover > li.selected {
+  background: transparent;
+  color: inherit;
+}
+
+.smart-dropdown > ul > li:hover,
+.smart-dropdown > ul:hover > li.selected:hover {
+  background: royalblue;
+  color: white;
+}
