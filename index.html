@@ -38,16 +38,20 @@
     <li unselectable="on">ein wirklich langer text. so!!! wirklich! gaaaanz lang!</li>
   </ul>
 </div>
+<script type="text/javascript" src="js/smart-dropdown.js"></script>
 <script type="text/javascript"><!--
 (function () {
-  var choicesContainer = dropdown.querySelector("ul");
+  var dropdown = document.querySelector(".smart-dropdown");
+  var entries = [];
   for (var i = 0; i < 7000; ++i) {
-    choicesContainer
-        .appendChild(document.createElement("li"))
-        .appendChild(document.createTextNode("entry: " + i));
+    entries.push(document.createTextNode("entry: " + i));
+  }
+  dropdown.appendChoice.apply(dropdown, entries);
+  dropdown.value = "blob";
+  dropdown.onchange = function (e) {
+    alert(e);
   }
 }());
 --></script>
-<script type="text/javascript" src="js/smart-dropdown.js"></script>
 </body>
 </html>
