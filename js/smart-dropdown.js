@@ -1,55 +1,32 @@
 [].forEach.call(document.querySelectorAll(".smart-dropdown"), function (dropdown) {
-  var input = dropdown.querySelector("input");
-  var button = dropdown.querySelector("button");
-  var choicesContainer = dropdown.querySelector("ul");
-  var choices = toArray(choicesContainer.children);
+  while (dropdown.lastChild) {
+    dropdown.removeChild(dropdown.lastChild);
+  }
+  var input = dropdown.appendChild(document.createElement("input"));
+  var button = dropdown.appendChild(document.createElement("button"));
+  var choicesContainer = dropdown.appendChild(document.createElement("ul"));
+  var choices = [];
   var selected;
   var filterString = "";
-  var choicesFocused = false;
-  var buttonFocused = false;
+
+  button.tabIndex = -1;
+  button.setAttribute("unselectable", "on");
+
+  choicesContainer.tabIndex = -1;
+  choicesContainer.setAttribute("unselectable", "on");
+  choicesContainer.style.display = "none";
 
   function updateInputValue() {
     if (selected) {
-      input.value = input.oldValue = textContent(selected);
+      input.value = input.oldValue = selected.textContent;
     }
     else {
       input.oldValue = input.value;
     }
   }
 
-  function choicesDisplayed() {
-    return choicesContainer.style.display != "none";
-  }
-
-  function toggleChoices() {
-    if (!choicesDisplayed()) {
-      showChoices();
-    }
-    else {
-      hideChoices();
-    }
-  }
-
-  function showChoices() {
-    choicesContainer.style.display = "";
-    if (selected) {
-      choicesContainer.scrollTop = selected.offsetTop + selected.offsetHeight > choicesContainer.offsetHeight
-          ? selected.offsetTop - selected.offsetHeight
-          : 0;
-    }
-  }
-
-  function hideChoices() {
-    choicesContainer.style.display = "none";
-    filterChoices("");
-  }
-
-  function filtered(choice) {
-    return choice.parentNode !== choicesContainer;
-  }
-
-  function selectedAvailable() {
-    return selected && !filtered(selected);
+  function selectedSelectable() {
+    return selected && selected.selectable;
   }
 
   function scrollIntoView(choice) {
@@ -66,16 +43,18 @@
   function select(choice) {
     if (choice) {
       if (selected) {
-        classListRemove(selected, "selected");
+        selected.className = selected.className.replace(/ *\bselected\b */g, " ").replace(/^ +| +$/g, "");
       }
       selected = choice;
-      classListAdd(selected, "selected");
+      if (!selected.className.match(/\bselected\b/)) {
+        selected.className = selected.className.replace(/\b$/, " ").concat("selected");
+      }
       updateInputValue();
     }
   }
 
   function scrollSelectedIntoView() {
-    if (selectedAvailable()) {
+    if (selectedSelectable()) {
       scrollIntoView(selected);
     }
     else {
@@ -88,24 +67,7 @@
     scrollSelectedIntoView();
   }
 
-  function selectNext() {
-    var nextChoice;
-    if (selectedAvailable()) {
-      nextChoice = nextElementSibling(selected);
-    }
-    selectAndScollIntoView(nextChoice || firstElementChild(choicesContainer));
-  }
-
-  function selectPrevious() {
-    var previousChoice;
-    if (selectedAvailable()) {
-      previousChoice = previousElementSibling(selected);
-    }
-    selectAndScollIntoView(previousChoice || lastElementChild(choicesContainer));
-  }
-
-  function selectFirstVisible() {
-    var minHeight = choicesContainer.scrollTop;
+  function selectBelow(minHeight) {
     var length = choicesContainer.children.length;
     for (var i = 0; i < length; ++i) {
       var choice = choicesContainer.children[i];
@@ -114,11 +76,10 @@
         return;
       }
     }
-    select(firstElementChild(choicesContainer));
+    select(dropdown.firstSelectableChoice);
   }
 
-  function selectLastVisible() {
-    var maxHeight = choicesContainer.scrollTop + choicesContainer.offsetHeight;
+  function selectAbove(maxHeight) {
     var length = choicesContainer.children.length;
     for (var i = 1; i < length; ++i) {
       var choice = choicesContainer.children[i];
@@ -127,42 +88,54 @@
         return;
       }
     }
-    select(lastElementChild(choicesContainer));
+    select(dropdown.lastSelectableChoice);
+  }
+
+  function refilterChoices(newFilterString) {
+    var nextInList = dropdown.firstSelectableChoice;
+    choices.forEach(function (choice) {
+      if (choice.selectable) {
+        nextInList = choice.nextElementSibling;
+        if (!choice.contentMatches(newFilterString)) {
+          choicesContainer.removeChild(choice);
+        }
+      }
+      else if (choice.contentMatches(newFilterString)) {
+        choicesContainer.insertBefore(choice, nextInList);
+      }
+    });
+  }
+
+  function refineFilter(newFilterString) {
+    var filteredChoices = [];
+    var length = choicesContainer.children.length;
+    for (var i = 0; i < length; ++i) {
+      var choice = choicesContainer.children[i];
+      if (!choice.contentMatches(newFilterString)) {
+        filteredChoices.push(choice);
+      }
+    }
+    filteredChoices.forEach(function (choice) {
+      choicesContainer.removeChild(choice);
+    });
   }
 
   function filterChoices(newFilterString) {
-    if (newFilterString == filterString) {
-      return;
-    }
     if (newFilterString.indexOf(filterString) < 0) {
-      var nextInList = firstElementChild(choicesContainer);
-      choices.forEach(function (choice) {
-        if (!filtered(choice)) {
-          nextInList = nextElementSibling(choice);
-          if (textContent(choice).indexOf(newFilterString) < 0) {
-            choicesContainer.removeChild(choice);
-          }
-        }
-        else if (textContent(choice).indexOf(newFilterString) >= 0) {
-          choicesContainer.insertBefore(choice, nextInList);
-        }
-      });
+      refilterChoices(newFilterString);
+    }
+    else if (newFilterString != filterString) {
+      refineFilter(newFilterString);
     }
     else {
-      toArray(choicesContainer.children).forEach(function (choice) {
-        if (textContent(choice).indexOf(newFilterString) < 0) {
-          choicesContainer.removeChild(choice);
-        }
-      });
+      return;
     }
     filterString = newFilterString;
     scrollSelectedIntoView();
   }
 
   input.onclick = function () {
-    if (!choicesDisplayed()) {
-      showChoices();
-    }
+    dropdown.showChoices();
   };
   input.onkeyup = function (e) {
     e = e || window.event;
@@ -173,132 +146,115 @@
     else if (input.oldValue != input.value) {
       input.oldValue = input.value;
       filterChoices(input.value);
-      if (!choicesDisplayed()) {
-        showChoices();
-      }
+      dropdown.showChoices();
     }
     return false;
   };
   input.onkeydown = function (e) {
     e = e || window.event;
-    if (!e.ctrlKey && !e.shiftKey && !e.altKey && choicesDisplayed()) {
+    if (!e.ctrlKey && !e.shiftKey && !e.altKey && dropdown.choicesVisible) {
       switch (e.keyCode) {
-      case 0x21: // page up
-        if (!selectedAvailable()) {
-          selectAndScollIntoView(lastElementChild(choicesContainer));
-        }
-        else {
-          choicesContainer.scrollTop = selected.offsetTop + selected.offsetHeight - choicesContainer.offsetHeight;
-          selectFirstVisible();
-        }
-        return false;
-      case 0x22: // page down
-        if (!selectedAvailable()) {
-          selectAndScollIntoView(firstElementChild(choicesContainer));
-        }
-        else {
-          choicesContainer.scrollTop = selected.offsetTop;
-          selectLastVisible();
-        }
-        return false;
-      case 0x24: // home
-        selectAndScollIntoView(firstElementChild(choicesContainer));
-        return false;
-      case 0x23: // end
-        selectAndScollIntoView(lastElementChild(choicesContainer));
-        return false;
+        case 0x21: // page up
+          if (!selectedSelectable()) {
+            selectAndScollIntoView(dropdown.lastSelectableChoice);
+          }
+          else {
+            var newTop = selected.offsetTop + selected.offsetHeight - choicesContainer.clientTop - choicesContainer.clientHeight;
+            selectBelow(newTop);
+            choicesContainer.scrollTop = newTop;
+          }
+          return false;
+        case 0x22: // page down
+          if (!selectedSelectable()) {
+            selectAndScollIntoView(dropdown.firstSelectableChoice);
+          }
+          else {
+            var newTop = selected.offsetTop - choicesContainer.clientTop;
+            selectAbove(newTop + choicesContainer.offsetHeight);
+            choicesContainer.scrollTop = newTop;
+          }
+          return false;
+        case 0x24: // home
+          selectAndScollIntoView(dropdown.firstSelectableChoice);
+          return false;
+        case 0x23: // end
+          selectAndScollIntoView(dropdown.lastSelectableChoice);
+          return false;
       }
     }
     switch (e.keyCode) {
-    case 0x0D: // enter
-      if (choicesDisplayed()) {
-        if (!selectedAvailable()) {
-          select(firstElementChild(choicesContainer));
-        }
-        updateInputValue();
-        hideChoices()
-      }
-      return false;
-    case 0x1B: // escape
-      if (choicesDisplayed()) {
-        hideChoices();
-      }
-      return;
-    case 0x28: // down
-      if (e.ctrlKey && !choicesDisplayed()) {
-        showChoices()
-      }
-      else {
-        selectNext(selected);
-      }
-      return false;
-    case 0x26: // up
-      if (e.ctrlKey && !choicesDisplayed()) {
-        showChoices()
-      }
-      else {
-        selectPrevious(selected);
-      }
-      return false;
-    case 0x20: // space
-      if (e.ctrlKey) {
-        filterChoices(input.value);
-        if (!choicesDisplayed()) {
-          showChoices();
+      case 0x0D: // enter
+        if (dropdown.choicesVisible) {
+          if (!selectedSelectable()) {
+            select(dropdown.firstSelectableChoice);
+          }
+          updateInputValue();
+          dropdown.hideChoices()
         }
         return false;
-      }
-      break;
+      case 0x1B: // escape
+        dropdown.hideChoices();
+        return;
+      case 0x28: // down
+        if (e.ctrlKey && !dropdown.choicesVisible) {
+          dropdown.showChoices()
+        }
+        else {
+          dropdown.selectNext();
+        }
+        return false;
+      case 0x26: // up
+        if (e.ctrlKey && !dropdown.choicesVisible) {
+          dropdown.showChoices()
+        }
+        else {
+          dropdown.selectPrevious();
+        }
+        return false;
+      case 0x20: // space
+        if (e.ctrlKey) {
+          filterChoices(input.value);
+          dropdown.showChoices();
+          return false;
+        }
+        break;
     }
   };
 
   function inputSiblingFocused() {
-    return (buttonFocused || choicesFocused);
+    return document.activeElement === button || document.activeElement === choicesContainer;
   }
 
   input.onblur = function (e) {
     setTimeout(function () {
-      if (!inputSiblingFocused() && choicesDisplayed()) {
-        hideChoices();
+      if (!inputSiblingFocused()) {
+        dropdown.hideChoices();
       }
       updateInputValue();
     }, 0);
   };
 
-  button.onfocus = function (e) {
-    buttonFocused = true;
-  };
-  button.onblur = function (e) {
-    buttonFocused = false;
-  };
   var buttonOnDblClick = null;
   button.onclick = function () {
     buttonOnDblClick = button.ondblclick;
     button.ondblclick = null;
     setTimeout(function () {
       button.ondblclick = buttonOnDblClick;
-      toggleChoices();
+      dropdown.toggleChoices();
       input.focus();
     });
     return false;
   };
-
   button.ondblclick = function () {
-    toggleChoices();
+    dropdown.toggleChoices();
     input.focus();
     return false;
   };
 
-  choicesContainer.onfocus = function () {
-    choicesFocused = true;
-  };
-  choicesContainer.onblur = function () {
-    choicesFocused = false;
-  };
   choicesContainer.onclick = function (e) {
     e = e || window.event;
     select(findClickedChoice(e));
-    hideChoices();
+    dropdown.hideChoices();
     input.focus();
   };
   function findClickedChoice(e) {
@@ -314,7 +270,7 @@
       if (choice.parentNode === choicesContainer) {
         return choice;
       }
-      choice = nextElementSibling(choice);
+      choice = choice.nextElementSibling;
     }
   }
 
@@ -323,6 +279,19 @@
     Array.prototype.forEach.call(content, function (content) {
       var choice = document.createElement("li");
       choice.appendChild(content);
+      Object.defineProperty(choice, "contentMatches", {
+        value: function (string) {
+          return this.textContent.indexOf(string) >= 0;
+        }
+      });
+      Object.defineProperty(choice, "selectable", {
+        get: function selectable() {
+          return choice.parentNode === choicesContainer;
+        }
+      });
+      if (!choice.textContent) {
+        choice.textContent = choice.innerText;
+      }
       newChoices.push(choice);
     });
     return newChoices;
@@ -344,7 +313,7 @@
       var nextInList = findNextAvailable(choices[index]);
       Array.prototype.splice.bind(choices, index, 0).apply(choices, newChoices);
       newChoices.forEach(function (choice) {
-        if (textContent(choice).indexOf(filterString) >= 0) {
+        if (choice.contentMatches(filterString)) {
           choicesContainer.insertBefore(choice, nextInList);
         }
       });
@@ -356,7 +325,7 @@
       var newChoices = createChoices(arguments);
       choices = choices.concat(newChoices);
       newChoices.forEach(function (choice) {
-        if (textContent(choice).indexOf(filterString) >= 0) {
+        if (choice.contentMatches(filterString)) {
           choicesContainer.appendChild(choice);
         }
       });
@@ -371,13 +340,108 @@
       select(choices[index]);
     }
   });
+  Object.defineProperty(dropdown, "choicesVisible", {
+    get: function choicesVisible() {
+      return choicesContainer.style.display != "none";
+    }
+  });
+  Object.defineProperty(dropdown, "showChoices", {
+    value: function showChoices() {
+      if (!this.choicesVisible) {
+        choicesContainer.style.visibility = "hidden";
+        try {
+          choicesContainer.style.display = "";
+          var viewportSpaceAboveDropdown = dropdown.offsetTop;
+          for (element = dropdown.parentNode; element instanceof Element; element = element.parentNode) {
+            viewportSpaceAboveDropdown += element.offsetTop - element.scrollTop;
+          }
+          var viewportSpaceBelowDropdown = document.documentElement.clientHeight - viewportSpaceAboveDropdown - dropdown.offsetHeight;
+          console.log(viewportSpaceBelowDropdown, " ", viewportSpaceAboveDropdown, " ", choicesContainer.offsetHeight, " ", viewportSpaceBelowDropdown < Math.min(choicesContainer.offsetHeight, viewportSpaceAboveDropdown));
+          if (viewportSpaceBelowDropdown < Math.min(choicesContainer.offsetHeight, viewportSpaceAboveDropdown)) {
+            choicesContainer.style.bottom = dropdown.clientHeight + "px";
+          }
+          else {
+            choicesContainer.style.bottom = "";
+          }
+          scrollSelectedIntoView();
+        }
+        finally {
+          choicesContainer.style.visibility = "";
+        }
+      }
+    }
+  });
+  Object.defineProperty(dropdown, "hideChoices", {
+    value: function hideChoices() {
+      if (this.choicesVisible) {
+        choicesContainer.style.display = "none";
+        filterChoices("");
+      }
+    }
+  });
+  Object.defineProperty(dropdown, "toggleChoices", {
+    value: function toggleChoices() {
+      if (!this.choicesVisible) {
+        this.showChoices();
+      }
+      else {
+        this.hideChoices();
+      }
+    }
+  });
+  Object.defineProperty(dropdown, "selectNext", {
+    value: function selectNext() {
+      var nextChoice;
+      if (selectedSelectable()) {
+        nextChoice = selected.nextElementSibling;
+      }
+      selectAndScollIntoView(nextChoice || dropdown.firstSelectableChoice);
+    }
+  });
+  Object.defineProperty(dropdown, "selectPrevious", {
+    value: function selectPrevious() {
+      var previousChoice;
+      if (selectedSelectable()) {
+        previousChoice = selected.previousElementSibling;
+      }
+      selectAndScollIntoView(previousChoice || dropdown.lastSelectableChoice);
+    }
+  });
+  Object.defineProperty(dropdown, "firstSelectableChoice", {
+    get: choicesContainer.firstElementChild ?
+         function () {
+           return choicesContainer.firstElementChild;
+         } :
+         function () {
+           for (var child = choicesContainer.firstChild; child; child = child.nextSibling) {
+             if (child instanceof Element) {
+               break;
+             }
+           }
+           return child;
+         }
+  });
+  Object.defineProperty(dropdown, "lastSelectableChoice", {
+    get: choicesContainer.lastElementChild ?
+         function () {
+           return choicesContainer.lastElementChild;
+         } :
+         function () {
+           for (var child = choicesContainer.lastChild; child; child = child.previousSibling) {
+             if (child instanceof Element) {
+               break;
+             }
+           }
+           return child;
+         }
+  });
   Object.defineProperty(dropdown, "value", {
     get: function value() {
-      return selected && textContent(selected);
+      return selected && selected.textContent;
     },
     set: function value(value) {
       select(choices.filter(function (choice) {
-        return textContent(choice).indexOf(value) >= 0;
+        return choice.contentMatches(value);
       })[0]);
     }
   });

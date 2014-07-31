@@ -29,7 +29,12 @@
 .smart-dropdown > button {
   border: 1px outset lightgray;
   padding: 1px 4px;
-  line-height: 0px;
+}
+
+.smart-dropdown > button:before {
+  display: block;
+  content: "▾";
+  line-height: 0;
 }
 
 .smart-dropdown > button::-moz-focus-inner {
@@ -55,13 +60,14 @@
   transition: opacity .15s ease 0;
   -webkit-transition: opacity .15s ease 0;
   overflow-y: auto;
-  max-height: 7em;
-  max-height: 50vh;
   box-sizing: content-box;
+  max-height: 22.1em;
+  line-height: 1.1em;
 }
 
 .smart-dropdown > ul,
 .smart-dropdown > ul > li {
+  margin: 0;
   cursor: default;
   user-select: none;
   -ms-user-select: none;

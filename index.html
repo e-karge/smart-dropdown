@@ -19,38 +19,40 @@
 
     body {
       text-align: center;
+      max-width: 35em;
+      margin: auto;
+      border: 10px solid crimson;
+      padding: 40px;
     }
 
   </style>
   <script type="text/javascript" src="js/polyfill.js"></script>
 </head>
 <body>
-<div class="smart-dropdown">
-  <input value="">
-  <button tabindex="-1" unselectable="on">&#9662;</button>
-  <ul tabindex="-1" unselectable="on" style="display: none">
-    <li unselectable="on">blub</li>
-    <li unselectable="on">bla</li>
-    <li unselectable="on">blob</li>
-    <li unselectable="on">hella</li>
-    <li unselectable="on">hello</li>
-    <li unselectable="on">world</li>
-    <li unselectable="on">ein wirklich langer text. so!!! wirklich! gaaaanz lang!</li>
-  </ul>
-</div>
+<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+<div class="smart-dropdown"></div>
+<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
 <script type="text/javascript" src="js/smart-dropdown.js"></script>
 <script type="text/javascript"><!--
 (function () {
   var dropdown = document.querySelector(".smart-dropdown");
-  var entries = [];
+  var entries = [
+    document.createTextNode("blub"),
+    document.createTextNode("bla"),
+    document.createTextNode("blob"),
+    document.createTextNode("hella"),
+    document.createTextNode("hello"),
+    document.createTextNode("world"),
+    document.createTextNode("ein wirklich langer text. so!!! wirklich! gaaaanz lang!")];
   for (var i = 0; i < 7000; ++i) {
     entries.push(document.createTextNode("entry: " + i));
   }
   dropdown.appendChoice.apply(dropdown, entries);
   dropdown.value = "blob";
-  dropdown.onchange = function (e) {
-    alert(e);
-  }
+//  dropdown.onchange = function (e) {
+//    alert(e);
+//  }
 }());
 --></script>
 </body>
